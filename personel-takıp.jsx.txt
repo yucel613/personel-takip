@@ -1,0 +1,507 @@
+import React, { useState } from 'react';
+import { Search, Plus, Edit, Trash2, Eye, Users, Clock, DollarSign, Award } from 'lucide-react';
+
+const PersonelTakipSistemi = () => {
+  const [personeller, setPersoneller] = useState([
+    {
+      id: 1,
+      ad: "Ahmet Yılmaz",
+      pozisyon: "Yazılım Geliştirici",
+      departman: "IT",
+      maas: 15000,
+      iseBaslamaTarihi: "2023-01-15",
+      telefon: "0532 123 4567",
+      email: "ahmet.yilmaz@sirket.com",
+      durum: "Aktif"
+    },
+    {
+      id: 2,
+      ad: "Fatma Kaya",
+      pozisyon: "İnsan Kaynakları Uzmanı",
+      departman: "İK",
+      maas: 12000,
+      iseBaslamaTarihi: "2022-03-10",
+      telefon: "0533 987 6543",
+      email: "fatma.kaya@sirket.com",
+      durum: "Aktif"
+    },
+    {
+      id: 3,
+      ad: "Mehmet Öz",
+      pozisyon: "Muhasebe Uzmanı",
+      departman: "Finans",
+      maas: 11000,
+      iseBaslamaTarihi: "2023-06-01",
+      telefon: "0534 456 7890",
+      email: "mehmet.oz@sirket.com",
+      durum: "İzinli"
+    }
+  ]);
+
+  const [aramaMetni, setAramaMetni] = useState('');
+  const [seciliDepartman, setSeciliDepartman] = useState('');
+  const [modalAcik, setModalAcik] = useState(false);
+  const [detayModalAcik, setDetayModalAcik] = useState(false);
+  const [duzenlemeModu, setDuzenlemeModu] = useState(false);
+  const [secilenPersonel, setSecilenPersonel] = useState(null);
+  const [yeniPersonel, setYeniPersonel] = useState({
+    ad: '',
+    pozisyon: '',
+    departman: '',
+    maas: '',
+    iseBaslamaTarihi: '',
+    telefon: '',
+    email: '',
+    durum: 'Aktif'
+  });
+
+  const departmanlar = [...new Set(personeller.map(p => p.departman))];
+
+  const filtrelenmisPersoneller = personeller.filter(personel => {
+    const aramaUygun = personel.ad.toLowerCase().includes(aramaMetni.toLowerCase()) ||
+                      personel.pozisyon.toLowerCase().includes(aramaMetni.toLowerCase()) ||
+                      personel.email.toLowerCase().includes(aramaMetni.toLowerCase());
+    const departmanUygun = seciliDepartman === '' || personel.departman === seciliDepartman;
+    return aramaUygun && departmanUygun;
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (duzenlemeModu) {
+      setPersoneller(personeller.map(p => 
+        p.id === secilenPersonel.id ? { ...yeniPersonel, id: secilenPersonel.id } : p
+      ));
+      setDuzenlemeModu(false);
+    } else {
+      const yeniId = Math.max(...personeller.map(p => p.id)) + 1;
+      setPersoneller([...personeller, { ...yeniPersonel, id: yeniId }]);
+    }
+    
+    setModalAcik(false);
+    setYeniPersonel({
+      ad: '',
+      pozisyon: '',
+      departman: '',
+      maas: '',
+      iseBaslamaTarihi: '',
+      telefon: '',
+      email: '',
+      durum: 'Aktif'
+    });
+    setSecilenPersonel(null);
+  };
+
+  const handleDuzenle = (personel) => {
+    setSecilenPersonel(personel);
+    setYeniPersonel(personel);
+    setDuzenlemeModu(true);
+    setModalAcik(true);
+  };
+
+  const handleSil = (id) => {
+    if (window.confirm('Bu personeli silmek istediğinizden emin misiniz?')) {
+      setPersoneller(personeller.filter(p => p.id !== id));
+    }
+  };
+
+  const handleDetayGor = (personel) => {
+    setSecilenPersonel(personel);
+    setDetayModalAcik(true);
+  };
+
+  const getDurumRengi = (durum) => {
+    switch (durum) {
+      case 'Aktif': return 'bg-green-100 text-green-800';
+      case 'İzinli': return 'bg-yellow-100 text-yellow-800';
+      case 'Ayrıldı': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const toplamPersonel = personeller.length;
+  const aktifPersonel = personeller.filter(p => p.durum === 'Aktif').length;
+  const ortalamaMaas = Math.round(personeller.reduce((sum, p) => sum + p.maas, 0) / personeller.length);
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                <Users className="mr-3 text-blue-600" />
+                Personel Takip Sistemi
+              </h1>
+              <p className="text-gray-600 mt-2">Şirket personellerini yönetin ve takip edin</p>
+            </div>
+            <button
+              onClick={() => setModalAcik(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center transition-colors"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Yeni Personel
+            </button>
+          </div>
+        </div>
+
+        {/* İstatistikler */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="flex items-center">
+              <Users className="w-8 h-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Toplam Personel</p>
+                <p className="text-2xl font-bold text-gray-900">{toplamPersonel}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="flex items-center">
+              <Award className="w-8 h-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Aktif Personel</p>
+                <p className="text-2xl font-bold text-gray-900">{aktifPersonel}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="flex items-center">
+              <DollarSign className="w-8 h-8 text-yellow-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Ortalama Maaş</p>
+                <p className="text-2xl font-bold text-gray-900">{ortalamaMaas.toLocaleString('tr-TR')}₺</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="flex items-center">
+              <Clock className="w-8 h-8 text-purple-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Departman Sayısı</p>
+                <p className="text-2xl font-bold text-gray-900">{departmanlar.length}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filtreleme */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Personel ara (ad, pozisyon, email)..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={aramaMetni}
+                  onChange={(e) => setAramaMetni(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="md:w-64">
+              <select
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={seciliDepartman}
+                onChange={(e) => setSeciliDepartman(e.target.value)}
+              >
+                <option value="">Tüm Departmanlar</option>
+                {departmanlar.map(dep => (
+                  <option key={dep} value={dep}>{dep}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Personel Listesi */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Personel
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Pozisyon
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Departman
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Maaş
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Durum
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    İşlemler
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filtrelenmisPersoneller.map((personel) => (
+                  <tr key={personel.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{personel.ad}</div>
+                        <div className="text-sm text-gray-500">{personel.email}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {personel.pozisyon}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {personel.departman}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {personel.maas.toLocaleString('tr-TR')}₺
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDurumRengi(personel.durum)}`}>
+                        {personel.durum}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleDetayGor(personel)}
+                          className="text-blue-600 hover:text-blue-900 p-1"
+                          title="Detayları Gör"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDuzenle(personel)}
+                          className="text-green-600 hover:text-green-900 p-1"
+                          title="Düzenle"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleSil(personel.id)}
+                          className="text-red-600 hover:text-red-900 p-1"
+                          title="Sil"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {filtrelenmisPersoneller.length === 0 && (
+            <div className="text-center py-12">
+              <Users className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">Personel bulunamadı</h3>
+              <p className="mt-1 text-sm text-gray-500">Arama kriterlerinizi değiştirmeyi deneyin.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Personel Ekleme/Düzenleme Modal */}
+        {modalAcik && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  {duzenlemeModu ? 'Personel Düzenle' : 'Yeni Personel Ekle'}
+                </h3>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
+                    <input
+                      type="text"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={yeniPersonel.ad}
+                      onChange={(e) => setYeniPersonel({...yeniPersonel, ad: e.target.value})}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Pozisyon</label>
+                    <input
+                      type="text"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={yeniPersonel.pozisyon}
+                      onChange={(e) => setYeniPersonel({...yeniPersonel, pozisyon: e.target.value})}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Departman</label>
+                    <input
+                      type="text"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={yeniPersonel.departman}
+                      onChange={(e) => setYeniPersonel({...yeniPersonel, departman: e.target.value})}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Maaş</label>
+                    <input
+                      type="number"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={yeniPersonel.maas}
+                      onChange={(e) => setYeniPersonel({...yeniPersonel, maas: Number(e.target.value)})}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">İşe Başlama Tarihi</label>
+                    <input
+                      type="date"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={yeniPersonel.iseBaslamaTarihi}
+                      onChange={(e) => setYeniPersonel({...yeniPersonel, iseBaslamaTarihi: e.target.value})}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+                    <input
+                      type="tel"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={yeniPersonel.telefon}
+                      onChange={(e) => setYeniPersonel({...yeniPersonel, telefon: e.target.value})}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input
+                      type="email"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={yeniPersonel.email}
+                      onChange={(e) => setYeniPersonel({...yeniPersonel, email: e.target.value})}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Durum</label>
+                    <select
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={yeniPersonel.durum}
+                      onChange={(e) => setYeniPersonel({...yeniPersonel, durum: e.target.value})}
+                    >
+                      <option value="Aktif">Aktif</option>
+                      <option value="İzinli">İzinli</option>
+                      <option value="Ayrıldı">Ayrıldı</option>
+                    </select>
+                  </div>
+
+                  <div className="flex justify-end space-x-2 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setModalAcik(false);
+                        setDuzenlemeModu(false);
+                        setYeniPersonel({
+                          ad: '',
+                          pozisyon: '',
+                          departman: '',
+                          maas: '',
+                          iseBaslamaTarihi: '',
+                          telefon: '',
+                          email: '',
+                          durum: 'Aktif'
+                        });
+                        setSecilenPersonel(null);
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                    >
+                      İptal
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                    >
+                      {duzenlemeModu ? 'Güncelle' : 'Kaydet'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Detay Modal */}
+        {detayModalAcik && secilenPersonel && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Personel Detayları</h3>
+                <div className="space-y-3">
+                  <div>
+                    <span className="font-medium text-gray-700">Ad Soyad:</span>
+                    <span className="ml-2 text-gray-900">{secilenPersonel.ad}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Pozisyon:</span>
+                    <span className="ml-2 text-gray-900">{secilenPersonel.pozisyon}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Departman:</span>
+                    <span className="ml-2 text-gray-900">{secilenPersonel.departman}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Maaş:</span>
+                    <span className="ml-2 text-gray-900">{secilenPersonel.maas.toLocaleString('tr-TR')}₺</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">İşe Başlama:</span>
+                    <span className="ml-2 text-gray-900">{new Date(secilenPersonel.iseBaslamaTarihi).toLocaleDateString('tr-TR')}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Telefon:</span>
+                    <span className="ml-2 text-gray-900">{secilenPersonel.telefon}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Email:</span>
+                    <span className="ml-2 text-gray-900">{secilenPersonel.email}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Durum:</span>
+                    <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${getDurumRengi(secilenPersonel.durum)}`}>
+                      {secilenPersonel.durum}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex justify-end mt-6">
+                  <button
+                    onClick={() => {
+                      setDetayModalAcik(false);
+                      setSecilenPersonel(null);
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                  >
+                    Kapat
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default PersonelTakipSistemi;

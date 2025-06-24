@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personel Takip Sistemi</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        // PersonelTakipSistemi.jsx dosyasının içeriğini buraya kopyalayın
+        // Dosyayı ayrı tutmak için bu satırı PersonelTakipSistemi.jsx'den import edin
+        
+        // Geçici olarak burada tanımlıyoruz
+        const { useState } = React;
+        const { 
+            Search, Plus, Edit, Trash2, Eye, Users, 
+            Clock, DollarSign, Award 
+        } = lucide;
+
+        const PersonelTakipSistemi = () => {
+            // PersonelTakipSistemi.jsx dosyasından tam kodu buraya kopyalayın
+            // Bu sadece çalıştırma için geçici bir yapı
+            
+            return React.createElement('div', {
+                className: 'min-h-screen bg-gray-50 p-6'
+            }, React.createElement('h1', {
+                className: 'text-3xl font-bold text-center text-gray-900'
+            }, 'PersonelTakipSistemi.jsx dosyasını yükleyin'));
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(PersonelTakipSistemi));
+    </script>
+</body>
+</html>
